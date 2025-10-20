@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Precio - Impresión 3D</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            background: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .tab:hover {
+            background: #f0f0f0;
+        }
+        .tab.active {
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .section h2 {
+            color: #764ba2;
+            margin-top: 0;
+            font-size: 1.2em;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input[type="number"]:focus, input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .helper-text {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 3px;
+        }
+        .result-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        .result-box h2 {
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+        }
+        .price-label {
+            font-weight: 500;
+        }
+        .price-value {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        .breakdown {
+            background: white;
+            color: #333;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .breakdown-item:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 2px solid #667eea;
+        }
+        .tip {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .tip strong {
+            color: #856404;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .saved-products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .product-card {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        .product-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+        .product-card h3 {
+            margin: 0 0 10px 0;
+            color: #667eea;
+        }
+        .product-card p {
+            margin: 5px 0;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .product-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 8px;
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .comparison-card {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #667eea;
+        }
+        .comparison-card h3 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        .comparison-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.9em;
+        }
+        .comparison-item:last-child {
+            border-bottom: none;
+        }
+        .discount-result {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .discount-result h3 {
+            margin-top: 0;
+            color: #155724;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .history-table th, .history-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .history-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 500;
+        }
+        .history-table tr:hover {
+            background: #f8f9ff;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .modal-content h2 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('calculator')">🧮 Calculadora</button>
+            <button class="tab" onclick="switchTab('saved')">💾 Productos Guardados</button>
+            <button class="tab" onclick="switchTab('comparison')">📊 Comparador</button>
+            <button class="tab" onclick="switchTab('discounts')">🎁 Descuentos por Volumen</button>
+            <button class="tab" onclick="switchTab('recovery')">⏱️ Tiempo de Recuperación</button>
+            <button class="tab" onclick="switchTab('history')">📈 Historial de Precios</button>
+        </div>
+
+        <!-- TAB: CALCULADORA -->
+        <div id="calculator" class="tab-content active">
+            <div class="container">
+                <h1>🎲 Calculadora de Precio - Impresión 3D</h1>
+                <p class="subtitle">Para terrenos de D&D y otros productos impresos</p>
+                
+                <div class="section">
+                    <h2>📝 Nombre del Producto</h2>
+                    <div class="input-group">
+                        <label>Nombre</label>
+                        <input type="text" id="nombreProducto" placeholder="Ej: Terreno Mazmorra A">
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>💰 Costos del Producto</h2>
+                    <div class="input-group">
+                        <label>Costo de Filamento (ARS)</label>
+                        <input type="number" id="costoFilamento" value="9700" min="0">
+                        <div class="helper-text">Costo del material usado en esta pieza</div>
+                    </div>
+                    <div class="input-group">
+                        <label>Tiempo de Impresión (horas)</label>
+                        <input type="number" id="tiempoImpresion" value="19" min="0" step="0.5">
+                        <div class="helper-text">Duración total del proceso de impresión</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>⚡ Costos Operativos</h2>
+                    <div class="input-group">
+                        <label>Costo de Electricidad por Hora (ARS)</label>
+                        <input type="number" id="costoElectricidad" value="150" min="0">
+                        <div class="helper-text">Consumo aproximado: 150-250W la mayoría de impresoras</div>
+                    </div>
+                    <div class="input-group">
+                        <label>Desgaste de Máquina por Hora (ARS)</label>
+                        <input type="number" id="desgasteMaquina" value="200" min="0">
+                        <div class="helper-text">Mantenimiento, repuestos, depreciación</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>👤 Tu Trabajo</h2>
+                    <div class="input-group">
+                        <label>Valor de tu Hora de Diseño/Trabajo (ARS)</label>
+                        <input type="number" id="valorHora" value="3000" min="0">
+                        <div class="helper-text">¿Cuánto vale tu tiempo de diseño, preparación y post-proceso?</div>
+                    </div>
+                    <div class="input-group">
+                        <label>Horas de Trabajo (diseño + post-proceso)</label>
+                        <input type="number" id="horasTrabajo" value="2" min="0" step="0.5">
+                        <div class="helper-text">Tiempo dedicado al diseño y acabado de la pieza</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>📊 Márgenes</h2>
+                    <div class="input-group">
+                        <label>Margen de Ganancia Mínimo (%)</label>
+                        <input type="number" id="margenMinimo" value="30" min="0" max="100">
+                        <div class="helper-text">Para cubrir gastos indirectos y tener rentabilidad básica</div>
+                    </div>
+                    <div class="input-group">
+                        <label>Margen de Ganancia Ideal (%)</label>
+                        <input type="number" id="margenIdeal" value="50" min="0" max="100">
+                        <div class="helper-text">Para que realmente valga la pena el negocio</div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-success" onclick="guardarProducto()">💾 Guardar Producto</button>
+                    <button class="btn btn-primary" onclick="guardarEnHistorial()">📈 Guardar en Historial</button>
+                </div>
+
+                <div class="result-box">
+                    <h2>💵 Precios Sugeridos</h2>
+                    
+                    <div class="price-item">
+                        <span class="price-label">Precio MÍNIMO (para no perder):</span>
+                        <span class="price-value" id="precioMinimo">-</span>
+                    </div>
+                    
+                    <div class="price-item">
+                        <span class="price-label">Precio RECOMENDADO (rentable):</span>
+                        <span class="price-value" id="precioRecomendado">-</span>
+                    </div>
+                    
+                    <div class="price-item">
+                        <span class="price-label">Precio IDEAL (vale la pena):</span>
+                        <span class="price-value" id="precioIdeal">-</span>
+                    </div>
+
+                    <div class="breakdown">
+                        <h3 style="margin-top: 0; color: #667eea;">Desglose de Costos</h3>
+                        <div class="breakdown-item">
+                            <span>Material (Filamento)</span>
+                            <span id="desgFilamento">-</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>Electricidad</span>
+                            <span id="desgElectricidad">-</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>Desgaste de Máquina</span>
+                            <span id="desgMaquina">-</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>Tu Trabajo</span>
+                            <span id="desgTrabajo">-</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>COSTO TOTAL</span>
+                            <span id="costoTotal">-</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TAB: PRODUCTOS GUARDADOS -->
+        <div id="saved" class="tab-content">
+            <div class="container">
+                <h1>💾 Productos Guardados</h1>
+                <p class="subtitle">Gestiona tus diseños y sus costos</p>
+                <div id="savedProductsList" class="saved-products"></div>
+            </div>
+        </div>
+
+        <!-- TAB: COMPARADOR -->
+        <div id="comparison" class="tab-content">
+            <div class="container">
+                <h1>📊 Comparador de Productos</h1>
+                <p class="subtitle">Compara hasta 3 productos lado a lado</p>
+                
+                <div class="section">
+                    <label>Selecciona productos para comparar:</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 15px;">
+                        <select id="compare1" onchange="actualizarComparacion()">
+                            <option value="">-- Seleccionar --</option>
+                        </select>
+                        <select id="compare2" onchange="actualizarComparacion()">
+                            <option value="">-- Seleccionar --</option>
+                        </select>
+                        <select id="compare3" onchange="actualizarComparacion()">
+                            <option value="">-- Seleccionar --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="comparisonResults" class="comparison-grid"></div>
+            </div>
+        </div>
+
+        <!-- TAB: DESCUENTOS -->
+        <div id="discounts" class="tab-content">
+            <div class="container">
+                <h1>🎁 Calculadora de Descuentos por Volumen</h1>
+                <p class="subtitle">Calcula tu ganancia real al vender múltiples unidades</p>
+
+                <div class="section">
+                    <h2>Selecciona un Producto</h2>
+                    <div class="input-group">
+                        <label>Producto</label>
+                        <select id="discountProduct" onchange="actualizarDescuentos()">
+                            <option value="">-- Seleccionar producto --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Configuración del Pack</h2>
+                    <div class="input-group">
+                        <label>Cantidad de Unidades</label>
+                        <input type="number" id="discountQuantity" value="3" min="1" onchange="actualizarDescuentos()">
+                    </div>
+                    <div class="input-group">
+                        <label>Descuento a Aplicar (%)</label>
+                        <input type="number" id="discountPercent" value="15" min="0" max="100" onchange="actualizarDescuentos()">
+                    </div>
+                </div>
+
+                <div id="discountResults"></div>
+            </div>
+        </div>
+
+        <!-- TAB: RECUPERACIÓN -->
+        <div id="recovery" class="tab-content">
+            <div class="container">
+                <h1>⏱️ Tiempo de Recuperación de Inversión</h1>
+                <p class="subtitle">Calcula cuándo recuperas tu inversión en equipamiento</p>
+
+                <div class="section">
+                    <h2>Inversión Inicial</h2>
+                    <div class="input-group">
+                        <label>Costo de la Impresora y Equipamiento (ARS)</label>
+                        <input type="number" id="inversionInicial" value="500000" min="0" onchange="calcularRecuperacion()">
+                        <div class="helper-text">Costo total de impresora, herramientas, materiales iniciales</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Proyección de Ventas</h2>
+                    <div class="input-group">
+                        <label>Producto a Analizar</label>
+                        <select id="recoveryProduct" onchange="calcularRecuperacion()">
+                            <option value="">-- Seleccionar producto --</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Unidades que Estimás Vender por Mes</label>
+                        <input type="number" id="unidadesMes" value="5" min="0" onchange="calcularRecuperacion()">
+                    </div>
+                </div>
+
+                <div id="recoveryResults"></div>
+            </div>
+        </div>
+
+        <!-- TAB: HISTORIAL -->
+        <div id="history" class="tab-content">
+            <div class="container">
+                <h1>📈 Historial de Precios</h1>
+                <p class="subtitle">Rastrea cómo evolucionan tus costos y precios (útil con la inflación 🇦🇷)</p>
+
+                <div class="btn-group">
+                    <button class="btn btn-danger" onclick="limpiarHistorial()">🗑️ Limpiar Historial</button>
+                </div>
+
+                <table class="history-table" id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Producto</th>
+                            <th>Costo Total</th>
+                            <th>Precio Recomendado</th>
+                            <th>Precio Ideal</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para cargar producto -->
+    <div id="loadModal" class="modal">
+        <div class="modal-content">
+            <h2>¿Cargar este producto?</h2>
+            <p>Esto reemplazará los valores actuales en la calculadora.</p>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="confirmarCarga()">✅ Cargar</button>
+                <button class="btn btn-secondary" onclick="cerrarModal()">❌ Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let productoACagar = null;
+
+        function formatPesos(valor) {
+            return '$' + Math.round(valor).toLocaleString('es-AR');
+        }
+
+        function obtenerValoresActuales() {
+            return {
+                nombre: document.getElementById('nombreProducto').value || 'Producto Sin Nombre',
+                costoFilamento: parseFloat(document.getElementById('costoFilamento').value) || 0,
+                tiempoImpresion: parseFloat(document.getElementById('tiempoImpresion').value) || 0,
+                costoElectricidad: parseFloat(document.getElementById('costoElectricidad').value) || 0,
+                desgasteMaquina: parseFloat(document.getElementById('desgasteMaquina').value) || 0,
+                valorHora: parseFloat(document.getElementById('valorHora').value) || 0,
+                horasTrabajo: parseFloat(document.getElementById('horasTrabajo').value) || 0,
+                margenMinimo: parseFloat(document.getElementById('margenMinimo').value) || 0,
+                margenIdeal: parseFloat(document.getElementById('margenIdeal').value) || 0
+            };
+        }
+
+        function calcularPrecios(datos) {
+            const costoElectricidadTotal = datos.costoElectricidad * datos.tiempoImpresion;
+            const costoDesgasteTotal = datos.desgasteMaquina * datos.tiempoImpresion;
+            const costoTrabajoTotal = datos.valorHora * datos.horasTrabajo;
+            const costoTotal = datos.costoFilamento + costoElectricidadTotal + costoDesgasteTotal + costoTrabajoTotal;
+            
+            return {
+                costoTotal,
+                costoElectricidadTotal,
+                costoDesgasteTotal,
+                costoTrabajoTotal,
+                precioMinimo: costoTotal,
+                precioRecomendado: costoTotal * (1 + datos.margenMinimo / 100),
+                precioIdeal: costoTotal * (1 + datos.margenIdeal / 100)
+            };
+        }
+
+        function calcular() {
+            const datos = obtenerValoresActuales();
+            const precios = calcularPrecios(datos);
+
+            document.getElementById('precioMinimo').textContent = formatPesos(precios.precioMinimo);
+            document.getElementById('precioRecomendado').textContent = formatPesos(precios.precioRecomendado);
+            document.getElementById('precioIdeal').textContent = formatPesos(precios.precioIdeal);
+
+            document.getElementById('desgFilamento').textContent = formatPesos(datos.costoFilamento);
+            document.getElementById('desgElectricidad').textContent = formatPesos(precios.costoElectricidadTotal);
+            document.getElementById('desgMaquina').textContent = formatPesos(precios.costoDesgasteTotal);
+            document.getElementById('desgTrabajo').textContent = formatPesos(precios.costoTrabajoTotal);
+            document.getElementById('costoTotal').textContent = formatPesos(precios.costoTotal);
+        }
+
+        function guardarProducto() {
+            const datos = obtenerValoresActuales();
+            if (!datos.nombre || datos.nombre === 'Producto Sin Nombre') {
+                alert('Por favor, ingresá un nombre para el producto');
+                return;
+            }
+
+            const productos = JSON.parse(localStorage.getItem('productos') || '[]');
+            const precios = calcularPrecios(datos);
+            
+            productos.push({
+                ...datos,
+                ...precios,
+                id: Date.now(),
+                fechaCreacion: new Date().toISOString()
+            });
+
+            localStorage.setItem('productos', JSON.stringify(productos));
+            alert('✅ Producto guardado exitosamente');
+            actualizarListaProductos();
+            actualizarSelectores();
+        }
+
+        function actualizarListaProductos() {
+            const productos = JSON.parse(localStorage.getItem('productos') || '[]');
+            const lista = document.getElementById('savedProductsList');
+            
+            if (productos.length === 0) {
+                lista.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No hay productos guardados todavía. ¡Creá uno en la calculadora!</p>';
+                return;
+            }
+
+            lista.innerHTML = productos.map(p => `
+                <div class="product-card">
+                    <h3>${p.nombre}</h3>
+                    <p><strong>Costo Total:</strong> ${formatPesos(p.costoTotal)}</p>
+                    <p><strong>Precio Recomendado:</strong> ${formatPesos(p.precioRecomendado)}</p>
+                    <p><strong>Tiempo:</strong> ${p.tiempoImpresion}hs</p>
+                    <div class="product-actions">
+                        <button class="btn btn-primary" style="padding: 8px 16px; font-size: 14px;" onclick="cargarProducto(${p.id})">📝 Cargar</button>
+                        <button class="btn btn-danger" style="padding: 8px 16px; font-size: 14px;" onclick="eliminarProducto(${p.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function cargarProducto(id) {
+            const productos = JSON.parse(localStorage.getItem('productos') || '[]');
+            productoACagar = productos.find(p => p.id === id);
+            document.getElementById('loadModal').classList.add('active');
+        }
+
+        function confirmarCarga() {
+            if (!productoACagar) return;
+            
+            document.getElementById('nombreProducto').value = productoACagar.nombre;
+            document.getElementById('costoFilamento').value = productoACagar.costoFilamento;
+            document.getElementById('tiempoImpresion').value = productoACagar.tiempoImpresion;
+            document.getElementById('costoElectricidad').value = productoACagar.costoElectricidad;
+            document.getElementById('desgasteMaquina').value = productoACagar.desgasteMaquina;
+            document.getElementById('valorHora').value = productoACagar.valorHora;
+            document.getElementById('horasTrabajo').value = productoACagar.horasTrabajo;
+            document.getElementById('margenMinimo').value = productoACagar.margenMinimo;
+            document.getElementById('margenIdeal').value = productoACagar.margenIdeal;
+            
+            calcular();
+            cerrarModal();
+            switchTab('calculator');
+        }
+
+        function cerrarModal() {
+            document.getElementById('loadModal').classList.remove('active');
+            productoACagar = null;
+        }
+
+        function eliminarProducto(id) {
+            if (!confirm('¿Estás seguro de eliminar este producto?')) return;
+            
+            let productos = JSON.parse(localStorage.getItem('productos') || '[]');
+            productos = productos.filter(p => p.id !== id);
+            localStorage.setItem('productos', JSON.stringify(productos));
+            actualizarListaProductos();
+            actualizarSelectores();
+        }
+
+        function actualizarSelectores() {
+            const productos = JSON.parse(localStorage.getItem('productos') || '[]');
+            const selects = ['compare1', 'compare2', 'compare3', 'discountProduct', 'recoveryProduct'];
+            
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                const currentValue = select.value;
+                select.innerHTML = '<option value="">-- Seleccionar --</option>' + 
+                    productos.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+                if (currentValue) select.value = currentValue;
+            });
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+
+            if (tabName === 'saved') actualizarListaProductos();
+            if (tabName === 'comparison') actualizarComparacion();
+            if (tabName === 'discounts') actualizarDescuentos();
+            if (tabName === 'recovery') calcularRecuperacion();
+            if (tabName === 'history') actualizarHistorial();
+        }
+
+        function actualizarComparacion() {
+            const productos = JSON.parse(localStorage.getItem('productos') || '[]');
+            const ids = [
+                document.getElementById('compare1').value,
+                document.getElementById('compare2').value,
+                document.getElementById('compare3').value
+            ].filter(id => id);
+
+            const seleccionados = productos.filter(p => ids.includes(String(p.id)));
+            const container = document.getElementById('comparisonResults');
+
+            if (seleccionados.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">Selecciona al menos un producto para comparar</p>';
+                return;
+            }
+
+            container.innerHTML = seleccionados.map(p => `
+                <div class="comparison-card">
+                    <h3>${p.nombre}</h3>
+                    <div class="comparison-item">
+                        <span>Costo Total</span>
+                        <strong>${formatPesos(p.costoTotal)}</strong>
+                    </div>
+                    <div class="comparison-item">
+                        <span>Precio Recomendado</span>
+                        <strong>${formatPesos(p.precioRecomendado)}</strong>
+                    </div>
+                    <div class="comparison-item">
+                        <span>Precio Ideal</span>
+                        <strong>${formatPesos(p.precioIdeal)}</strong>
+                    </div>
+                    <div class="comparison-item">
+                        <span>Margen Ideal</span>
+                        <strong>${p.margenIdeal}%</strong>
+                    </div>
+                    <div class="comparison-item">
+                        <span>Tiempo Impresión</span>
+                        <strong>${p.tiempoImpresion}hs</strong>
+                    </div>
+                    <div class="comparison-item">
+                        <span>Ganancia por Hora</span>
+                        <strong>${formatPesos((p.precioIdeal - p.costoTotal) / p.tiempoImpresion)}</strong>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function actualizarDescuentos() {
+            const productId = document.getElementById('discountProduct').value;
+            const cantidad = parseInt(document.getElementById('discountQuantity').value) || 0;
+            const descuento = parseFloat(document.getElementById('discountPercent').value) || 0;
+            const container = document.getElementById('discountResults');
+
+            if (!productId || cantidad === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const productos = JSON.parse(localStorage.getItem('productos') || '[]');
+            const producto = productos.find(p => p.id === parseInt(productId));
+            
+            if (!producto) return;
+
+            const precioUnitarioOriginal = producto.precioIdeal;
+            const precioUnitarioDescuento = precioUnitarioOriginal * (1 - descuento / 100);
+            const ventaTotalOriginal = precioUnitarioOriginal * cantidad;
+            const ventaTotalDescuento = precioUnitarioDescuento * cantidad;
+            const costoTotalProduccion = producto.costoTotal * cantidad;
+            const gananciaOriginal = ventaTotalOriginal - costoTotalProduccion;
+            const gananciaDescuento = ventaTotalDescuento - costoTotalProduccion;
+            const diferenciaGanancia = gananciaOriginal - gananciaDescuento;
+
+            container.innerHTML = `
+                <div class="discount-result">
+                    <h3>📊 Análisis del Pack de ${cantidad} unidades</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                        <div>
+                            <h4 style="margin-top: 0; color: #155724;">Sin Descuento</h4>
+                            <p><strong>Precio por unidad:</strong> ${formatPesos(precioUnitarioOriginal)}</p>
+                            <p><strong>Venta total:</strong> ${formatPesos(ventaTotalOriginal)}</p>
+                            <p><strong>Ganancia:</strong> ${formatPesos(gananciaOriginal)}</p>
+                        </div>
+                        <div>
+                            <h4 style="margin-top: 0; color: #155724;">Con ${descuento}% Descuento</h4>
+                            <p><strong>Precio por unidad:</strong> ${formatPesos(precioUnitarioDescuento)}</p>
+                            <p><strong>Venta total:</strong> ${formatPesos(ventaTotalDescuento)}</p>
+                            <p><strong>Ganancia:</strong> ${formatPesos(gananciaDescuento)}</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #c3e6cb;">
+                        <p><strong>Costo de producción total:</strong> ${formatPesos(costoTotalProduccion)}</p>
+                        <p><strong>Ganancia que dejás de percibir:</strong> <span style="color: #dc3545;">${formatPesos(diferenciaGanancia)}</span></p>
+                        <p style="margin-top: 15px; font-size: 0.9em; color: #155724;">
+                            💡 <strong>Consejo:</strong> ${gananciaDescuento > costoTotalProduccion * 0.3 
+                                ? 'El descuento sigue siendo rentable. ¡Podés usarlo para incentivar compras múltiples!' 
+                                : 'Cuidado: el margen se reduce mucho. Considerá un descuento menor o aumentar la cantidad mínima.'}
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function calcularRecuperacion() {
+            const inversion = parseFloat(document.getElementById('inversionInicial').value) || 0;
+            const productId = document.getElementById('recoveryProduct').value;
+            const unidadesMes = parseInt(document.getElementById('unidadesMes').value) || 0;
+            const container = document.getElementById('recoveryResults');
+
+            if (!productId || unidadesMes === 0 || inversion === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const productos = JSON.parse(localStorage.getItem('productos') || '[]');
+            const producto = productos.find(p => p.id === parseInt(productId));
+            
+            if (!producto) return;
+
+            const gananciaPorUnidad = producto.precioIdeal - producto.costoTotal;
+            const gananciaMensual = gananciaPorUnidad * unidadesMes;
+            const mesesRecuperacion = inversion / gananciaMensual;
+            const horasMensuales = producto.tiempoImpresion * unidadesMes;
+
+            container.innerHTML = `
+                <div class="result-box">
+                    <h2>📊 Análisis de Recuperación</h2>
+                    <div class="breakdown">
+                        <div class="breakdown-item">
+                            <span>Inversión Total</span>
+                            <span>${formatPesos(inversion)}</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>Ganancia por Unidad</span>
+                            <span>${formatPesos(gananciaPorUnidad)}</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>Ganancia Mensual Estimada</span>
+                            <span>${formatPesos(gananciaMensual)}</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>Horas de Impresión al Mes</span>
+                            <span>${horasMensuales.toFixed(1)}hs (${(horasMensuales/30).toFixed(1)}hs/día)</span>
+                        </div>
+                        <div class="breakdown-item" style="background: #667eea; color: white; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                            <span style="font-size: 1.1em;">⏱️ Tiempo de Recuperación</span>
+                            <span style="font-size: 1.3em;"><strong>${mesesRecuperacion.toFixed(1)} meses</strong></span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.2); border-radius: 8px;">
+                        <p style="margin: 0; font-size: 0.95em;">
+                            💡 <strong>Proyección:</strong> Si vendés ${unidadesMes} unidades de "${producto.nombre}" por mes, 
+                            recuperarías tu inversión en aproximadamente ${Math.ceil(mesesRecuperacion)} meses. 
+                            Después de eso, ¡todo es ganancia!
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function guardarEnHistorial() {
+            const datos = obtenerValoresActuales();
+            const precios = calcularPrecios(datos);
+            const historial = JSON.parse(localStorage.getItem('historial') || '[]');
+            
+            historial.push({
+                fecha: new Date().toISOString(),
+                nombre: datos.nombre,
+                costoTotal: precios.costoTotal,
+                precioRecomendado: precios.precioRecomendado,
+                precioIdeal: precios.precioIdeal,
+                margenMinimo: datos.margenMinimo,
+                margenIdeal: datos.margenIdeal
+            });
+
+            localStorage.setItem('historial', JSON.stringify(historial));
+            alert('✅ Registro guardado en el historial');
+        }
+
+        function actualizarHistorial() {
+            const historial = JSON.parse(localStorage.getItem('historial') || '[]');
+            const tbody = document.getElementById('historyTableBody');
+
+            if (historial.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #666;">No hay registros en el historial todavía</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = historial.reverse().map((h, index) => {
+                const fecha = new Date(h.fecha);
+                const fechaFormateada = fecha.toLocaleDateString('es-AR') + ' ' + fecha.toLocaleTimeString('es-AR', {hour: '2-digit', minute: '2-digit'});
+                
+                return `
+                    <tr>
+                        <td>${fechaFormateada}</td>
+                        <td>${h.nombre}</td>
+                        <td>${formatPesos(h.costoTotal)}</td>
+                        <td>${formatPesos(h.precioRecomendado)}</td>
+                        <td>${formatPesos(h.precioIdeal)}</td>
+                        <td><button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="eliminarHistorial(${historial.length - 1 - index})">🗑️</button></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function eliminarHistorial(index) {
+            if (!confirm('¿Eliminar este registro?')) return;
+            
+            let historial = JSON.parse(localStorage.getItem('historial') || '[]');
+            historial.splice(index, 1);
+            localStorage.setItem('historial', JSON.stringify(historial));
+            actualizarHistorial();
+        }
+
+        function limpiarHistorial() {
+            if (!confirm('¿Estás seguro de eliminar TODO el historial? Esta acción no se puede deshacer.')) return;
+            
+            localStorage.setItem('historial', '[]');
+            actualizarHistorial();
+            alert('✅ Historial limpiado');
+        }
+
+        // Inicialización
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', calcular);
+        });
+
+        window.addEventListener('load', () => {
+            calcular();
+            actualizarListaProductos();
+            actualizarSelectores();
+        });
+
+        // Cerrar modal al hacer click fuera
+        document.getElementById('loadModal').addEventListener('click', (e) => {
+            if (e.target.id === 'loadModal') cerrarModal();
+        });
+    </script>
+</body>
+</html>
